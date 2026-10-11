@@ -18,7 +18,7 @@ function flatText(el){return allTextNodes(el).map(n=>n.textContent).join('');}
 
 function insertAtGlobal(el,index,text){
   const nodes=allTextNodes(el);let pos=0;
-  for(const n of nodes){const s=n.textContent;if(index<=pos+s.length){const at=Math.max(0,index-pos);n.textContent=s.slice(0,at)+text+s.slice(at);return true}pos+=s.length}
+  for(const n of nodes){const s=n.textContent;if(index<=pos+s.length){const at=Math.max(0,index-pos);n.textContent=s.slice(0,at)+text+s.slice(at);n.setAttributeNS('http://www.w3.org/XML/1998/namespace','xml:space','preserve');return true}pos+=s.length}
   if(nodes.length && index===pos){nodes[nodes.length-1].textContent+=text;return true}
   return false;
 }
@@ -29,7 +29,7 @@ function putAfter(el,label,val){
 }
 function replaceInContainer(el,needle,replacement){
   const nodes=allTextNodes(el);
-  for(const n of nodes){if(n.textContent.includes(needle)){n.textContent=n.textContent.replace(needle,replacement);return true}}
+  for(const n of nodes){if(n.textContent.includes(needle)){n.textContent=n.textContent.replace(needle,replacement);n.setAttributeNS('http://www.w3.org/XML/1998/namespace','xml:space','preserve');return true}}
   const txt=flatText(el),i=txt.indexOf(needle);
   if(i<0)return false;
   const start=nodes;let pos=0;
@@ -37,7 +37,7 @@ function replaceInContainer(el,needle,replacement){
     const n=start[a],s=n.textContent,next=pos+s.length;
     if(i>=pos && i<next){
       const local=i-pos,remain=needle.length;
-      if(i+remain<=next){n.textContent=s.slice(0,local)+replacement+s.slice(local+remain);return true}
+      if(i+remain<=next){n.textContent=s.slice(0,local)+replacement+s.slice(local+remain);n.setAttributeNS('http://www.w3.org/XML/1998/namespace','xml:space','preserve');return true}
       let left=remain-(s.length-local);n.textContent=s.slice(0,local)+replacement;
       let j=a+1;while(j<start.length&&left>0){const old=start[j].textContent;if(left>=old.length){start[j].textContent='';left-=old.length;j++}else{start[j].textContent=old.slice(left);left=0}}
       return true
