@@ -5,16 +5,16 @@ Ferramenta estática para preencher a autorização de divulgação de anúncio 
 ## Uso
 
 1. Abra a página publicada pelo GitHub Pages.
-2. Selecione o arquivo DOCX original usado como matriz.
-3. Preencha os campos necessários.
-4. Clique em **Gerar autorização preenchida (.docx)**.
+2. O gerador tenta carregar automaticamente `modelo-original.docx` do repositório.
+3. Se o modelo ainda não estiver publicado, selecione o DOCX original no campo da página.
+4. Preencha os dados e clique em **Gerar autorização preenchida (.docx)**.
 5. Abra e revise o documento gerado antes de usar.
 
 O preenchimento ocorre localmente no navegador; o arquivo selecionado não é enviado a um servidor.
 
 ## Modelo original
 
-O gerador precisa do arquivo DOCX original para preservar a estrutura, o texto e a formatação que já existem no documento. Até o modelo ser incluído como arquivo estático neste repositório, selecione-o manualmente em cada sessão.
+Para carregar o documento automaticamente, envie o arquivo original para a raiz deste repositório com o nome exato `modelo-original.docx`. [Abrir a página de upload de arquivos](https://github.com/andrebroncadev/autorizacao-locacao/upload/main).
 
 ## Publicação
 
