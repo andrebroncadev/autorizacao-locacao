@@ -3,6 +3,7 @@ const $ = id => document.getElementById(id);
 const W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 const TEMPLATE_URL = './modelo%20autoriza%C3%A7%C3%A3o%20de%20divulga%C3%A7%C3%A3o%20LOCAC%C3%83O%20REMAX%20SOUL%20sem%20exclusividade.docx';
 let templateBytes = null;
+let xmlDoc = null;
 let templateName = 'modelo-original.docx';
 
 function value(id){return ($(id)?.value || '').trim();}
@@ -198,10 +199,10 @@ async function makeDocx(){
   if(!window.JSZip)throw new Error('A biblioteca de documentos não carregou. Confira a conexão e tente novamente.');
   const zip=await JSZip.loadAsync(templateBytes.slice(0));
   const file=zip.file('word/document.xml');if(!file)throw new Error('O modelo não contém word/document.xml.');
-  const parser=new DOMParser();const xml=parser.parseFromString(await file.async('string'),'application/xml');
-  if(xml.getElementsByTagName('parsererror').length)throw new Error('Não foi possível ler o XML do modelo.');
-  fillDocx(xml);
-  const result=new XMLSerializer().serializeToString(xml.documentElement);
+  const parser=new DOMParser();xmlDoc=parser.parseFromString(await file.async('string'),'application/xml');
+  if(xmlDoc.getElementsByTagName('parsererror').length)throw new Error('Não foi possível ler o XML do modelo.');
+  fillDocx(xmlDoc);
+  const result=new XMLSerializer().serializeToString(xmlDoc.documentElement);
   zip.file('word/document.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+result);
   const blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');
