@@ -7,6 +7,7 @@ let xmlDoc = null;
 let templateName = 'modelo-original.docx';
 
 function value(id){return ($(id)?.value || '').trim();}
+function localToday(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function checked(name){return document.querySelector('input[name="'+name+'"]:checked')?.value || '';}
 function allTextNodes(el){return Array.from(el.getElementsByTagNameNS(W,'t'));}
 function direct(el,local){return Array.from(el.children).filter(n=>n.localName===local);}
@@ -230,12 +231,12 @@ async function loadTemplate(){
   try{const res=await fetch(TEMPLATE_URL,{cache:'no-store'});if(!res.ok)throw new Error('HTTP '+res.status);templateBytes=await res.arrayBuffer();setTemplateStatus('Modelo original carregado automaticamente. Pronto para gerar.','ok')}
   catch(err){setTemplateStatus('Não foi possível carregar automaticamente o DOCX. Selecione o modelo abaixo.','bad');addPicker()}
 }
-function clearForm(){ $('authForm').reset();$('data').value=new Date().toISOString().slice(0,10);status('Formulário limpo.');}
+function clearForm(){ $('authForm').reset();$('data').value=localToday();status('Formulário limpo.');}
 $('btnLimpar').addEventListener('click',clearForm);
 $('btnDocx').addEventListener('click',async()=>{try{status('Gerando DOCX…');await makeDocx();status('DOCX gerado. Abra e confira antes de utilizar.')}catch(err){status(err.message,'bad')}});
 $('btnDocxTop').addEventListener('click',()=>$('btnDocx').click());
 $('btnPdf').addEventListener('click',async()=>{try{status('Preparando visualização…');await makePdf();status('Visualização aberta. Use a opção de imprimir/salvar em PDF.')}catch(err){status(err.message,'bad')}});
 $('btnPdfTop').addEventListener('click',()=>$('btnPdf').click());
-$('data').value=new Date().toISOString().slice(0,10);
+$('data').value=localToday();
 (function theme(){let t='light';try{t=localStorage.getItem('remax-unified-theme')||'light'}catch(_){}document.documentElement.dataset.theme=t;const b=document.createElement('button');b.className='theme-toggle no-print';b.type='button';function apply(){b.textContent=document.documentElement.dataset.theme==='dark'?'☀ Modo claro':'☾ Modo escuro';b.setAttribute('aria-pressed',String(document.documentElement.dataset.theme==='dark'))}b.onclick=()=>{const n=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=n;try{localStorage.setItem('remax-unified-theme',n)}catch(_){}apply()};apply();document.body.appendChild(b)})();
 loadTemplate();
