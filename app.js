@@ -174,13 +174,13 @@ function printPageHtml(data,logo){
 <tr class="r"><td colspan="2">ÁREA TOTAL: ${e(value('areaTotal'))} &nbsp;&nbsp;&nbsp; ÁREA CONSTRUÍDA: ${e(value('areaConstruida'))}<span style="float:right">IDADE DO IMÓVEL: ${e(value('idade'))}</span></td></tr>
 <tr><td colspan="2">VALOR DA LOCAÇÃO: R$ ${e(value('valorLocacao'))} /MÊS<br>INCLUSO no valor anunciado da locação:<br>IPTU ${box(markNo('iptuIncluso'))}não &nbsp; ${box(mark('iptuIncluso'))}sim &nbsp; R$ ${e(value('iptuValor'))} /MÊS<br>CONDOMÍNIO ${box(markNo('condIncluso'))}não &nbsp; ${box(mark('condIncluso'))}sim &nbsp; R$ ${e(value('condValor'))} /MÊS</td></tr>
 <tr><td colspan="2" style="height:7mm">DESCRIÇÃO DO IMÓVEL:</td></tr><tr class="description"><td colspan="2">${fmtText(value('descricao'))}</td></tr>
-<tr class="options"><td colspan="2">MOBILIADO: NÃO ${box(markNo('mobiliado'))} &nbsp; SIM ${box(mark('mobiliado'))}</td></tr>
-<tr class="options"><td colspan="2">ELETRODOMÉSTICOS: NÃO ${box(markNo('eletro'))} &nbsp; SIM ${box(mark('eletro'))}</td></tr>
-<tr class="options"><td colspan="2">POSSUI ÁREA DE LAZER: NÃO ${box(markNo('lazer'))} &nbsp; SIM ${box(mark('lazer'))}</td></tr>
-<tr class="options"><td colspan="2">PISCINA PRIVATIVA: NÃO ${box(markNo('piscina'))} &nbsp; SIM ${box(mark('piscina'))}</td></tr>
-<tr class="options"><td colspan="2">CHURRASQUEIRA PRIVATIVA: NÃO ${box(markNo('churrasqueira'))} &nbsp; SIM ${box(mark('churrasqueira'))}</td></tr>
-<tr class="options"><td colspan="2">SERVIÇO DE PRAIA: NÃO ${box(markNo('servicoPraia'))} &nbsp; SIM ${box(mark('servicoPraia'))}</td></tr>
-<tr class="options"><td colspan="2">CHAVES NO LOCAL NÃO ${box(markNo('chaves'))} SIM ${box(mark('chaves'))}</td></tr>
+<tr class="options"><td colspan="2">MOBILIADO: NÃO ${box(markNo('mobiliado'))} &nbsp; SIM ${box(mark('mobiliado'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
+<tr class="options"><td colspan="2">ELETRODOMÉSTICOS: NÃO ${box(markNo('eletro'))} &nbsp; SIM ${box(mark('eletro'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
+<tr class="options"><td colspan="2">POSSUI ÁREA DE LAZER: NÃO ${box(markNo('lazer'))} &nbsp; SIM ${box(mark('lazer'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
+<tr class="options"><td colspan="2">PISCINA PRIVATIVA: NÃO ${box(markNo('piscina'))} &nbsp; SIM ${box(mark('piscina'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
+<tr class="options"><td colspan="2">CHURRASQUEIRA PRIVATIVA: NÃO ${box(markNo('churrasqueira'))} &nbsp; SIM ${box(mark('churrasqueira'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
+<tr class="options"><td colspan="2">SERVIÇO DE PRAIA: NÃO ${box(markNo('servicoPraia'))} &nbsp; SIM ${box(mark('servicoPraia'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
+<tr class="options"><td colspan="2">CHAVES NO LOCAL NÃO ${box(markNo('chaves'))} SIM ${box(mark('chaves'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
 <tr class="r"><td colspan="2">SEMPRE AVISAR O(A) PROPRIETÁRIO(A) QUANDO FOR VISITAR ATRAVÉS DO TEL: (${e(value('telVisita'))})</td></tr></table></section>
 <section class="page page2"><div class="logo">${logo?'<img src="'+logo+'" alt="RE/MAX SOUL">':''}</div>
 <table class="tbl notes"><tr><td>OBSERVAÇÕES:</td></tr><tr><td>${fmtText(value('observacoes'))}</td></tr><tr><td></td></tr><tr><td></td></tr></table>
