@@ -186,7 +186,7 @@ function printPageHtml(data,logo){
 <tr class="options"><td colspan="2">CHAVES NO LOCAL NÃO ${box(markNo('chaves'))} SIM ${box(mark('chaves'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
 <tr class="r"><td colspan="2">SEMPRE AVISAR O(A) PROPRIETÁRIO(A) QUANDO FOR VISITAR ATRAVÉS DO TEL: (${e(value('telVisita'))})</td></tr></table></section>
 <section class="page page2"><div class="logo">${logo?'<img src="'+logo+'" alt="RE/MAX SOUL">':''}</div>
-<table class="tbl notes"><tr><td>OBSERVAÇÕES:</td></tr>${noteRows}
+<table class="tbl notes"><tr><td>OBSERVAÇÕES:</td></tr>${noteRows}</table>
 <div class="section">II. DADOS DO(A) PROPRIETÁRIO(A)/LOCADOR(A)</div>
 <table class="tbl owner"><tr><td>NOME: ${e(value('nome'))}</td></tr><tr><td>ENDEREÇO RESIDENCIAL: ${e(value('endResidencial'))}</td></tr>
 <tr><td>CIDADE: ${e(value('cidade'))}<span style="margin-left:26mm">ESTADO: ${e(value('estado'))}</span><span style="float:right">CEP: ${e(value('cep'))}</span></td></tr>
