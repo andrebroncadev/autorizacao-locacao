@@ -1,21 +1,21 @@
-# Autorização de divulgação para locação — RE/MAX SOUL
+# Autorização de divulgação de locação — RE/MAX SOUL
 
-Ferramenta estática para preencher a autorização de divulgação de anúncio de locação de imóvel sem exclusividade.
+Aplicação estática no GitHub Pages para preencher o documento original de autorização de divulgação de anúncio de locação de imóvel sem exclusividade.
 
-## Uso
+## Como funciona
 
-1. Abra a página publicada pelo GitHub Pages.
-2. O gerador tenta carregar automaticamente `modelo-original.docx` do repositório.
-3. Se o modelo ainda não estiver publicado, selecione o DOCX original no campo da página.
-4. Preencha os dados e clique em **Gerar autorização preenchida (.docx)**.
-5. Abra e revise o documento gerado antes de usar.
-
-O preenchimento ocorre localmente no navegador; o arquivo selecionado não é enviado a um servidor.
-
-## Modelo original
-
-Para carregar o documento automaticamente, envie o arquivo original para a raiz deste repositório com o nome exato `modelo-original.docx`. [Abrir a página de upload de arquivos](https://github.com/andrebroncadev/autorizacao-locacao/upload/main).
+- O formulário está organizado em blocos, seguindo o padrão visual do EBIMOB Rent Tool.
+- O DOCX original, já versionado neste repositório, é carregado automaticamente pelo navegador.
+- **Gerar DOCX preenchido** preenche os campos sem reconstruir o documento Word do zero: cabeçalho, logo, tabelas, paginação e estilos do modelo são preservados.
+- **Visualizar / PDF** monta uma versão de impressão com template string e abre a janela de impressão do navegador. Selecione “Salvar como PDF”.
+- Não há login, backend ou banco de dados. Os dados do formulário são processados localmente no navegador.
 
 ## Publicação
 
-O site é estático e não exige login, banco de dados ou servidor. O arquivo principal é `index.html`.
+- Página: https://andrebroncadev.github.io/autorizacao-locacao/
+- Modelo DOCX: `modelo autorização de divulgação LOCACÃO REMAX SOUL sem exclusividade.docx`
+- Arquivos da aplicação: `index.html`, `styles.css`, `app.js`
+
+## Conferência recomendada
+
+Antes de usar uma autorização real, gere um DOCX com dados de teste, abra no Word/LibreOffice e confirme campos, marcações de opções, quebras de linha e paginação. A versão DOCX utiliza o arquivo original como matriz; a versão PDF é uma composição de impressão baseada no mesmo texto e nos mesmos campos.
