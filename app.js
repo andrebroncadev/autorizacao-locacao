@@ -160,6 +160,8 @@ function logoData(zip){
   return zip.file('word/media/image1.jpeg')?.async('base64').then(b=>'data:image/jpeg;base64,'+b).catch(()=> '') || Promise.resolve('');
 }
 function printPageHtml(data,logo){
+  const noteLines=value('observacoes').split(/\r?\n/);
+  const noteRows=[0,1,2].map(i=>'<tr><td>'+fmtText(noteLines[i]||'')+'</td></tr>').join('');
   const mark=(name)=>radioText(name)==='sim'?'X':' ';
   const markNo=(name)=>radioText(name)==='não'?'X':' ';
   const box=(x)=>'('+x+')';
@@ -184,7 +186,7 @@ function printPageHtml(data,logo){
 <tr class="options"><td colspan="2">CHAVES NO LOCAL NÃO ${box(markNo('chaves'))} SIM ${box(mark('chaves'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
 <tr class="r"><td colspan="2">SEMPRE AVISAR O(A) PROPRIETÁRIO(A) QUANDO FOR VISITAR ATRAVÉS DO TEL: (${e(value('telVisita'))})</td></tr></table></section>
 <section class="page page2"><div class="logo">${logo?'<img src="'+logo+'" alt="RE/MAX SOUL">':''}</div>
-<table class="tbl notes"><tr><td>OBSERVAÇÕES:</td></tr><tr><td>${fmtText(value('observacoes'))}</td></tr><tr><td></td></tr><tr><td></td></tr></table>
+<table class="tbl notes"><tr><td>OBSERVAÇÕES:</td></tr>${noteRows}
 <div class="section">II. DADOS DO(A) PROPRIETÁRIO(A)/LOCADOR(A)</div>
 <table class="tbl owner"><tr><td>NOME: ${e(value('nome'))}</td></tr><tr><td>ENDEREÇO RESIDENCIAL: ${e(value('endResidencial'))}</td></tr>
 <tr><td>CIDADE: ${e(value('cidade'))}<span style="margin-left:26mm">ESTADO: ${e(value('estado'))}</span><span style="float:right">CEP: ${e(value('cep'))}</span></td></tr>
