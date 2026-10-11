@@ -59,7 +59,7 @@ function markCheckboxBeforeWord(el,section,word,on){
   const wordAt=s.toLowerCase().indexOf(word.toLowerCase(),start);
   if(wordAt<start||wordAt>=end)return;
   const open=s.lastIndexOf('(',wordAt),close=s.lastIndexOf(')',wordAt);
-  if(open>=start&&open>close)markGlobalChar(el,open+1,on?'X':' ');
+  if(open>=start&&close>open)markGlobalChar(el,open+1,on?'X':' ');
 }
 function setCellLines(cell,text){
   if(!text)return;
@@ -86,9 +86,15 @@ function fillUnderlinedTab(paragraph,label,val){
   if(!val)return;
   const runs=Array.from(paragraph.getElementsByTagNameNS(W,'r'));
   const text=flatText(paragraph),labelAt=text.indexOf(label);if(labelAt<0)return;
+  let count=0,labelRun=-1;
+  for(let i=0;i<runs.length;i++){
+    const rt=allTextNodes(runs[i]).map(n=>n.textContent).join('');
+    if(labelAt+label.length<=count+rt.length){labelRun=i;break}
+    count+=rt.length;
+  }
   let target=null;
-  for(const run of runs){
-    if(run.getElementsByTagNameNS(W,'tab').length){target=run;break}
+  for(let i=Math.max(0,labelRun+1);i<runs.length;i++){
+    if(runs[i].getElementsByTagNameNS(W,'tab').length){target=runs[i];break}
   }
   if(!target){putAfter(paragraph,label,val);return}
   const tab=target.getElementsByTagNameNS(W,'tab')[0];
