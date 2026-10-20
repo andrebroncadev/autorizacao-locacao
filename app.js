@@ -11,6 +11,7 @@ function value(id){return ($(id)?.value || '').trim();}
 function praiaValue(){return value('praia')==='OUTRA'?value('praiaOutra'):value('praia');}
 function corretorValue(){return value('corretor')==='OUTRO'?value('corretorOutro'):value('corretor');}
 function enderecoImovel(){return [value('endereco'),value('numeroImovel'),value('complementoImovel'),value('cepImovel')?'CEP '+value('cepImovel'):''].filter(Boolean).join(', ');}
+function enderecoProprietario(){return [value('endResidencial'),value('numeroResidencial'),value('cep')?'CEP '+value('cep'):''].filter(Boolean).join(', ');}
 function formatArea(id){const v=value(id);return v?v.replace(/\s*m²?$/i,'')+' m²':'';}
 function formatIdade(){const v=value('idade');return v?v.replace(/\s*anos?$/i,'')+' anos':'';}
 function applyBroker(){const n=corretorValue();$('creci').value=n==='Érica Bronca'?'199167-F':n==='André Bronca'?'327982-F':'';}
@@ -134,7 +135,7 @@ function fillDocx(xml){
   const propertyRows=rowsOf(tables[0]),pc=propertyRows.map(r=>cellsOf(r)[0]);
   if(value('tipo')){markCheckboxAfter(pc[0],'SOBRADO',value('tipo')==='SOBRADO');markCheckboxAfter(pc[0],'TÉRREA',value('tipo')==='TÉRREA')}
   putAfter(pc[0],'PRAIA:',praiaValue());
-  putAfter(pc[1],'DISTÂNCIA DA PRAIA:',value('distancia')?value('distancia')+' metros':'');
+  putAfter(pc[1],'DISTÂNCIA DA PRAIA:',value('distancia'));replaceInContainer(pc[1],'METROS','metros');
   putAfter(pc[2],'ENDEREÇO DO IMÓVEL:',enderecoImovel());
   putAfter(pc[3],'CONDOMÍNIO:',value('condominio'));
   putAfter(pc[3],'Nº UNIDADE:',value('unidade'));
@@ -155,8 +156,8 @@ function fillDocx(xml){
   }
   setCellLines(pc[7],value('descricao'));
   [['mobiliado',8],['eletro',10],['lazer',12],['piscina',14],['churrasqueira',16],['servicoPraia',18],['chaves',20]].forEach(([name,row])=>{
-    const v=checked(name);if(!v)return;
-    swapYesNo(pc[row]);markCheckboxAfter(pc[row],'NÃO',v==='não');markCheckboxAfter(pc[row],'SIM',v==='sim');
+    swapYesNo(pc[row]);const v=checked(name);if(!v)return;
+    markCheckboxAfter(pc[row],'NÃO',v==='não');markCheckboxAfter(pc[row],'SIM',v==='sim');
   });
   if(value('telVisita'))replaceInContainer(pc[22],'(  )','('+value('telVisita')+')');
   const obsRows=rowsOf(tables[1]);
@@ -165,7 +166,7 @@ function fillDocx(xml){
   if(noteLines.length>3&&obsRows[3])setCellLines(cellsOf(obsRows[3])[0],noteLines.slice(2).join('\n'));
   const ownerRows=rowsOf(tables[2]),oc=ownerRows.map(r=>cellsOf(r)[0]);
   putAfter(oc[0],'NOME:',value('nome'));
-  putAfter(oc[1],'ENDEREÇO RESIDENCIAL:',value('endResidencial'));
+  putAfter(oc[1],'ENDEREÇO RESIDENCIAL:',enderecoProprietario());
   putAfter(oc[2],'CIDADE:',value('cidade'));putAfter(oc[2],'ESTADO:',value('estado'));putAfter(oc[2],'CEP:',value('cep'));
   putAfter(oc[3],'CPF:',value('cpf'));putAfter(oc[4],'TELEFONE:',value('telefone'));putAfter(oc[5],'E-MAIL:',value('email'));
   setDate(xml);
@@ -202,20 +203,20 @@ function printPageHtml(data,logo){
 <tr class="r"><td colspan="2">DISTÂNCIA DA PRAIA: ${e(value('distancia'))}${value('distancia')?' metros':''}</td></tr><tr class="r"><td colspan="2">ENDEREÇO DO IMÓVEL: ${e(enderecoImovel())}</td></tr>
 <tr class="r"><td>CONDOMÍNIO: ${e(value('condominio'))}</td><td>Nº UNIDADE: ${e(value('unidade'))}</td></tr>
 <tr class="r"><td colspan="2">ÁREA TOTAL: ${e(formatArea('areaTotal'))} &nbsp;&nbsp;&nbsp; ÁREA CONSTRUÍDA: ${e(formatArea('areaConstruida'))}<span style="float:right">IDADE DO IMÓVEL: ${e(formatIdade())}</span></td></tr>
-<tr><td colspan="2">VALOR DA LOCAÇÃO: R$ ${e(value('valorLocacao'))} /MÊS<br>INCLUSO no valor anunciado da locação:<br>IPTU ${box(markNo('iptuIncluso'))}não &nbsp; ${box(mark('iptuIncluso'))}sim &nbsp; R$ ${e(value('iptuValor'))} /MÊS<br>CONDOMÍNIO ${box(markNo('condIncluso'))}não &nbsp; ${box(mark('condIncluso'))}sim &nbsp; R$ ${e(value('condValor'))} /MÊS</td></tr>
+<tr><td colspan="2">VALOR DA LOCAÇÃO: R$ ${e(value('valorLocacao'))} /MÊS<br>INCLUSO no valor anunciado da locação:<br>IPTU ${box(mark('iptuIncluso'))}sim &nbsp; ${box(markNo('iptuIncluso'))}não &nbsp; R$ ${e(value('iptuValor'))} /MÊS<br>CONDOMÍNIO ${box(mark('condIncluso'))}sim &nbsp; ${box(markNo('condIncluso'))}não &nbsp; R$ ${e(value('condValor'))} /MÊS</td></tr>
 <tr><td colspan="2" style="height:7mm">DESCRIÇÃO DO IMÓVEL:</td></tr><tr class="description"><td colspan="2">${fmtText(value('descricao'))}</td></tr>
-<tr class="options"><td colspan="2">MOBILIADO: NÃO ${box(markNo('mobiliado'))} &nbsp; SIM ${box(mark('mobiliado'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
-<tr class="options"><td colspan="2">ELETRODOMÉSTICOS: NÃO ${box(markNo('eletro'))} &nbsp; SIM ${box(mark('eletro'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
-<tr class="options"><td colspan="2">POSSUI ÁREA DE LAZER: NÃO ${box(markNo('lazer'))} &nbsp; SIM ${box(mark('lazer'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
-<tr class="options"><td colspan="2">PISCINA PRIVATIVA: NÃO ${box(markNo('piscina'))} &nbsp; SIM ${box(mark('piscina'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
-<tr class="options"><td colspan="2">CHURRASQUEIRA PRIVATIVA: NÃO ${box(markNo('churrasqueira'))} &nbsp; SIM ${box(mark('churrasqueira'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
-<tr class="options"><td colspan="2">SERVIÇO DE PRAIA: NÃO ${box(markNo('servicoPraia'))} &nbsp; SIM ${box(mark('servicoPraia'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
+<tr class="options"><td colspan="2">MOBILIADO: SIM ${box(mark('mobiliado'))} &nbsp; NÃO ${box(markNo('mobiliado'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
+<tr class="options"><td colspan="2">ELETRODOMÉSTICOS: SIM ${box(mark('eletro'))} &nbsp; NÃO ${box(markNo('eletro'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
+<tr class="options"><td colspan="2">POSSUI ÁREA DE LAZER: SIM ${box(mark('lazer'))} &nbsp; NÃO ${box(markNo('lazer'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
+<tr class="options"><td colspan="2">PISCINA PRIVATIVA: SIM ${box(mark('piscina'))} &nbsp; NÃO ${box(markNo('piscina'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
+<tr class="options"><td colspan="2">CHURRASQUEIRA PRIVATIVA: SIM ${box(mark('churrasqueira'))} &nbsp; NÃO ${box(markNo('churrasqueira'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
+<tr class="options"><td colspan="2">SERVIÇO DE PRAIA: SIM ${box(mark('servicoPraia'))} &nbsp; NÃO ${box(markNo('servicoPraia'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
 <tr class="options"><td colspan="2">CHAVES NO LOCAL NÃO ${box(markNo('chaves'))} SIM ${box(mark('chaves'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
 <tr class="r"><td colspan="2">SEMPRE AVISAR O(A) PROPRIETÁRIO(A) QUANDO FOR VISITAR ATRAVÉS DO TEL: (${e(value('telVisita'))})</td></tr></table></section>
 <section class="page page2"><div class="logo">${logo?'<img src="'+logo+'" alt="RE/MAX SOUL">':''}</div>
 <table class="tbl notes"><tr><td>OBSERVAÇÕES:</td></tr>${noteRows}</table>
 <div class="section">II. DADOS DO(A) PROPRIETÁRIO(A)/LOCADOR(A)</div>
-<table class="tbl owner"><tr><td>NOME: ${e(value('nome'))}</td></tr><tr><td>ENDEREÇO RESIDENCIAL: ${e(value('endResidencial'))}</td></tr>
+<table class="tbl owner"><tr><td>NOME: ${e(value('nome'))}</td></tr><tr><td>ENDEREÇO RESIDENCIAL: ${e(enderecoProprietario())}</td></tr>
 <tr><td>CIDADE: ${e(value('cidade'))}<span style="margin-left:26mm">ESTADO: ${e(value('estado'))}</span><span style="float:right">CEP: ${e(value('cep'))}</span></td></tr>
 <tr><td>CPF: ${e(value('cpf'))}</td></tr><tr><td>TELEFONE: ${e(value('telefone'))}</td></tr><tr><td>E-MAIL: ${e(value('email'))}</td></tr></table>
 <div class="date">DATA: ${e(datePt(value('data')))}</div>
