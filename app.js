@@ -247,7 +247,7 @@ async function makePdf(){
   const zip=await JSZip.loadAsync(templateBytes.slice(0));const logo=await logoData(zip);
   const frame=document.createElement('iframe');frame.style.cssText='position:fixed;left:-10000px;top:0;width:820px;height:1200px;border:0';document.body.appendChild(frame);
   try{
-    const doc=frame.contentDocument;doc.open();doc.write(printPageHtml(getData(),logo).replace(/<script>[\s\S]*?<\/script>/,'').replace('</body>',''));doc.close();
+    const doc=frame.contentDocument;doc.open();doc.write(printPageHtml(getData(),logo).replace('@media screen{body{background:#e5e7eb;padding:12px}.page{background:#fff;margin:0 auto 12px;box-shadow:0 2px 15px #0002}}','body{background:#fff;padding:0}.page{background:#fff;margin:0;box-shadow:none}').replace(/<script>[\s\S]*?<\/script>/,'').replace('</body>',''));doc.close();
     await new Promise(resolve=>setTimeout(resolve,500));
     await html2pdf().set({margin:0,filename:'autorizacao-locacao'+(value('nome')?'-'+value('nome').replace(/[^a-z0-9À-ÿ -]/gi,'').trim().replace(/\s+/g,'-'):'')+'.pdf',image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,useCORS:true,logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy']}}).from(doc.body).save();
   }finally{frame.remove()}
