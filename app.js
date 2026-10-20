@@ -211,7 +211,7 @@ function printPageHtml(data,logo){
 <tr class="options"><td colspan="2">PISCINA PRIVATIVA: SIM ${box(mark('piscina'))} &nbsp; NÃO ${box(markNo('piscina'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
 <tr class="options"><td colspan="2">CHURRASQUEIRA PRIVATIVA: SIM ${box(mark('churrasqueira'))} &nbsp; NÃO ${box(markNo('churrasqueira'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
 <tr class="options"><td colspan="2">SERVIÇO DE PRAIA: SIM ${box(mark('servicoPraia'))} &nbsp; NÃO ${box(markNo('servicoPraia'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
-<tr class="options"><td colspan="2">CHAVES NO LOCAL NÃO ${box(markNo('chaves'))} SIM ${box(mark('chaves'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
+<tr class="options"><td colspan="2">CHAVES NO LOCAL SIM ${box(mark('chaves'))} NÃO ${box(markNo('chaves'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
 <tr class="r"><td colspan="2">SEMPRE AVISAR O(A) PROPRIETÁRIO(A) QUANDO FOR VISITAR ATRAVÉS DO TEL: (${e(value('telVisita'))})</td></tr></table></section>
 <section class="page page2"><div class="logo">${logo?'<img src="'+logo+'" alt="RE/MAX SOUL">':''}</div>
 <table class="tbl notes"><tr><td>OBSERVAÇÕES:</td></tr>${noteRows}</table>
@@ -263,7 +263,7 @@ async function loadTemplate(){
   try{const res=await fetch(TEMPLATE_URL,{cache:'no-store'});if(!res.ok)throw new Error('HTTP '+res.status);templateBytes=await res.arrayBuffer();setTemplateStatus('Modelo original carregado automaticamente. Pronto para gerar.','ok')}
   catch(err){setTemplateStatus('Não foi possível carregar automaticamente o DOCX. Selecione o modelo abaixo.','bad');addPicker()}
 }
-function clearForm(){ $('authForm').reset();$('data').value=localToday();status('Formulário limpo.');}
+function clearForm(){ $('authForm').reset();$('data').value=localToday();$('praiaOutra').classList.add('hidden');$('corretorOutro').classList.add('hidden');applyBroker();status('Formulário limpo.');}
 $('btnLimpar').addEventListener('click',clearForm);
 $('praia').addEventListener('change',()=>{const other=value('praia')==='OUTRA';$('praiaOutra').classList.toggle('hidden',!other);if(other)$('praiaOutra').focus()});
 $('corretor').addEventListener('change',()=>{const other=value('corretor')==='OUTRO';$('corretorOutro').classList.toggle('hidden',!other);applyBroker();if(other)$('corretorOutro').focus()});
@@ -272,7 +272,7 @@ $('cepImovel').addEventListener('blur',()=>lookupCep('cepImovel','property'));
 $('cep').addEventListener('blur',()=>lookupCep('cep','owner'));
 $('btnDocx').addEventListener('click',async()=>{try{status('Gerando DOCX…');await makeDocx();status('DOCX gerado. Abra e confira antes de utilizar.')}catch(err){status(err.message,'bad')}});
 $('btnDocxTop').addEventListener('click',()=>$('btnDocx').click());
-$('btnPdf').addEventListener('click',async()=>{try{status('Preparando visualização…');await makePdf();status('Visualização aberta. Use a opção de imprimir/salvar em PDF.')}catch(err){status(err.message,'bad')}});
+$('btnPdf').addEventListener('click',async()=>{try{status('Preparando visualização…');await makePdf();status('PDF gerado e baixado.')}catch(err){status(err.message,'bad')}});
 $('btnPdfTop').addEventListener('click',()=>$('btnPdf').click());
 $('data').value=localToday();applyBroker();
 (function theme(){let t='light';try{t=localStorage.getItem('remax-unified-theme')||'light'}catch(_){}document.documentElement.dataset.theme=t;const b=document.createElement('button');b.className='theme-toggle no-print';b.type='button';function apply(){b.textContent=document.documentElement.dataset.theme==='dark'?'☀ Modo claro':'☾ Modo escuro';b.setAttribute('aria-pressed',String(document.documentElement.dataset.theme==='dark'))}b.onclick=()=>{const n=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=n;try{localStorage.setItem('remax-unified-theme',n)}catch(_){}apply()};apply();document.body.appendChild(b)})();
