@@ -131,6 +131,7 @@ function fillUnderlinedTab(paragraph,label,val){
   target.insertBefore(t,tab);
 }
 function fillDocx(xml){
+  for(const node of allTextNodes(xml)){if(node.textContent.includes('II. DADOS DO IMÓVEL'))node.textContent=node.textContent.replace('II. DADOS DO IMÓVEL','I. DADOS DO IMÓVEL');}
   const tables=tablesOf(xml);if(tables.length<3)throw new Error('O DOCX selecionado não corresponde ao modelo da autorização.');
   const propertyRows=rowsOf(tables[0]),pc=propertyRows.map(r=>cellsOf(r)[0]);
   if(value('tipo')){markCheckboxAfter(pc[0],'SOBRADO',value('tipo')==='SOBRADO');markCheckboxAfter(pc[0],'TÉRREA',value('tipo')==='TÉRREA')}
@@ -198,7 +199,7 @@ function printPageHtml(data,logo){
 @page{size:A4;margin:0}*{box-sizing:border-box}body{margin:0;font:10pt Arial,sans-serif;color:#000}.page{width:210mm;height:297mm;padding:13mm 13mm 10mm;position:relative;page-break-after:always;overflow:hidden}.page:last-child{page-break-after:auto}.logo{height:25mm;display:flex;align-items:center;justify-content:center;margin:0 0 2mm}.logo img{max-width:145mm;max-height:25mm;object-fit:contain}.title{text-align:center;text-decoration:underline;font-weight:bold;font-size:11pt;margin:1mm 0 8mm;line-height:1.5}.section{font-weight:bold;text-decoration:underline;margin:0 0 7mm;font-size:10pt}.tbl{width:100%;border-collapse:collapse;table-layout:fixed;font-size:8.2pt}.tbl td{border:1px solid #222;padding:1mm 1.5mm;vertical-align:top;overflow-wrap:anywhere}.r{height:5mm}.description{height:58mm}.description td{vertical-align:top}.options{height:5mm}.notes td{height:5mm}.owner td{height:5mm}.date{text-align:center;margin:6mm 0 7mm}.auth{font-size:9pt;line-height:2.05;text-align:justify;margin:0 3mm}.signature{margin:13mm auto 0;border-top:1px solid #000;width:62%;text-align:center;padding-top:1mm;font-size:8pt}.page2 .logo{margin-bottom:5mm}.page2 .section{margin-top:6mm;margin-bottom:7mm}
 @media screen{body{background:#e5e7eb;padding:12px}.page{background:#fff;margin:0 auto 12px;box-shadow:0 2px 15px #0002}}@media print{body{background:white}.page{margin:0;box-shadow:none}}
 </style></head><body>
-<section class="page"><div class="logo">${logo?'<img src="'+logo+'" alt="RE/MAX SOUL">':''}</div><div class="title">AUTORIZAÇÃO PARA DIVULGAÇÃO DE ANÚNCIO DE LOCAÇÃO<br>DE IMÓVEL SEM EXCLUSIVIDADE</div><div class="section">II. DADOS DO IMÓVEL</div>
+<section class="page"><div class="logo">${logo?'<img src="'+logo+'" alt="RE/MAX SOUL">':''}</div><div class="title">AUTORIZAÇÃO PARA DIVULGAÇÃO DE ANÚNCIO DE LOCAÇÃO<br>DE IMÓVEL SEM EXCLUSIVIDADE</div><div class="section">I. DADOS DO IMÓVEL</div>
 <table class="tbl"><tr class="r"><td colspan="2">TIPO: SOBRADO ${box(value('tipo')==='SOBRADO'?'X':' ')} &nbsp; TÉRREA ${box(value('tipo')==='TÉRREA'?'X':' ')}<span style="float:right">PRAIA: ${e(praiaValue())}</span></td></tr>
 <tr class="r"><td colspan="2">DISTÂNCIA DA PRAIA: ${e(value('distancia'))}${value('distancia')?' metros':''}</td></tr><tr class="r"><td colspan="2">ENDEREÇO DO IMÓVEL: ${e(enderecoImovel())}</td></tr>
 <tr class="r"><td>CONDOMÍNIO: ${e(value('condominio'))}</td><td>Nº UNIDADE: ${e(value('unidade'))}</td></tr>
