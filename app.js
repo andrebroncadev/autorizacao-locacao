@@ -7,6 +7,32 @@ let xmlDoc = null;
 let templateName = 'modelo-original.docx';
 
 function value(id){return ($(id)?.value || '').trim();}
+
+function praiaValue(){return value('praia')==='OUTRA'?value('praiaOutra'):value('praia');}
+function corretorValue(){return value('corretor')==='OUTRO'?value('corretorOutro'):value('corretor');}
+function enderecoImovel(){return [value('endereco'),value('numeroImovel'),value('complementoImovel'),value('cepImovel')?'CEP '+value('cepImovel'):''].filter(Boolean).join(', ');}
+function formatArea(id){const v=value(id);return v?v.replace(/\s*m²?$/i,'')+' m²':'';}
+function formatIdade(){const v=value('idade');return v?v.replace(/\s*anos?$/i,'')+' anos':'';}
+function applyBroker(){const n=corretorValue();$('creci').value=n==='Érica Bronca'?'199167-F':n==='André Bronca'?'327982-F':'';}
+function swapYesNo(el){
+ const nodes=allTextNodes(el);let yes=null,no=null;
+ for(const n of nodes){if(!no&&/\bNÃO\b/i.test(n.textContent))no=n;if(!yes&&/\bSIM\b/i.test(n.textContent))yes=n;}
+ if(yes&&no&&yes!==no){const y=yes.textContent.match(/\bSIM\b/i),n=no.textContent.match(/\bNÃO\b/i);if(y&&n){yes.textContent=yes.textContent.replace(/\bSIM\b/i,'__SWAP__');no.textContent=no.textContent.replace(/\bNÃO\b/i,'SIM');yes.textContent=yes.textContent.replace('__SWAP__','NÃO');}}
+ else if(yes&&no&&yes===no){yes.textContent=yes.textContent.replace(/\bNÃO\b/ig,'__NO__').replace(/\bSIM\b/ig,'NÃO').replace(/__NO__/g,'SIM');}
+}
+async function lookupCep(inputId, mode){
+ const cep=$(inputId).value.replace(/\D/g,'');const statusEl=$(mode==='property'?'cepImovelStatus':'cepStatus');
+ if(cep.length!==8){if(statusEl)statusEl.textContent='Informe um CEP válido com 8 dígitos.';return;}
+ if(statusEl)statusEl.textContent='Consultando CEP…';
+ try{
+  const response=await fetch('https://viacep.com.br/ws/'+cep+'/json/');if(!response.ok)throw new Error('Falha ao consultar o CEP.');
+  const data=await response.json();if(data.erro)throw new Error('CEP não encontrado.');
+  if(mode==='property'){$('endereco').value=data.logradouro||$('endereco').value;if(data.bairro&&!$('complementoImovel').value)$('complementoImovel').value=data.bairro;}
+  else{$('endResidencial').value=[data.logradouro,data.bairro].filter(Boolean).join(', ')||$('endResidencial').value;$('cidade').value=data.localidade||$('cidade').value;$('estado').value=data.uf||$('estado').value;}
+  if(statusEl)statusEl.textContent='CEP localizado. Confira os dados e complete o número.';
+ }catch(err){if(statusEl)statusEl.textContent=err.message+' Preencha o endereço manualmente.';}
+}
+
 function localToday(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function checked(name){return document.querySelector('input[name="'+name+'"]:checked')?.value || '';}
 function allTextNodes(el){return Array.from(el.getElementsByTagNameNS(W,'t'));}
@@ -107,30 +133,30 @@ function fillDocx(xml){
   const tables=tablesOf(xml);if(tables.length<3)throw new Error('O DOCX selecionado não corresponde ao modelo da autorização.');
   const propertyRows=rowsOf(tables[0]),pc=propertyRows.map(r=>cellsOf(r)[0]);
   if(value('tipo')){markCheckboxAfter(pc[0],'SOBRADO',value('tipo')==='SOBRADO');markCheckboxAfter(pc[0],'TÉRREA',value('tipo')==='TÉRREA')}
-  putAfter(pc[0],'PRAIA:',value('praia'));
-  putAfter(pc[1],'DISTÂNCIA DA PRAIA:',value('distancia'));
-  putAfter(pc[2],'ENDEREÇO DO IMÓVEL:',value('endereco'));
+  putAfter(pc[0],'PRAIA:',praiaValue());
+  putAfter(pc[1],'DISTÂNCIA DA PRAIA:',value('distancia')?value('distancia')+' metros':'');
+  putAfter(pc[2],'ENDEREÇO DO IMÓVEL:',enderecoImovel());
   putAfter(pc[3],'CONDOMÍNIO:',value('condominio'));
   putAfter(pc[3],'Nº UNIDADE:',value('unidade'));
-  putAfter(pc[4],'ÁREA TOTAL:',value('areaTotal'));
-  putAfter(pc[4],'ÁREA CONSTRUÍDA:',value('areaConstruida'));
-  putAfter(pc[4],'IDADE DO IMÓVEL:',value('idade'));
+  putAfter(pc[4],'ÁREA TOTAL:',formatArea('areaTotal'));
+  putAfter(pc[4],'ÁREA CONSTRUÍDA:',formatArea('areaConstruida'));
+  putAfter(pc[4],'IDADE DO IMÓVEL:',formatIdade());
   const rentP=paragraphsOf(pc[5]).find(p=>flatText(p).includes('VALOR DA LOCAÇÃO'));
   const iptuP=paragraphsOf(pc[5]).find(p=>flatText(p).includes('IPTU'));
   const condP=paragraphsOf(pc[5]).find(p=>flatText(p).includes('CONDOMÍNIO'));
   if(rentP)replaceInContainer(rentP,'R$              ','R$ '+value('valorLocacao')+' ');
   if(iptuP){
     replaceInContainer(iptuP,'R$              /MÊS','R$ '+value('iptuValor')+' /MÊS');
-    const v=checked('iptuIncluso');if(v){markCheckboxBeforeWord(iptuP,'IPTU','não',v==='não');markCheckboxBeforeWord(iptuP,'IPTU','sim',v==='sim')}
+    swapYesNo(iptuP);const v=checked('iptuIncluso');if(v){markCheckboxBeforeWord(iptuP,'IPTU','não',v==='não');markCheckboxBeforeWord(iptuP,'IPTU','sim',v==='sim')}
   }
   if(condP){
     replaceInContainer(condP,'R$              /MÊS','R$ '+value('condValor')+' /MÊS');
-    const v=checked('condIncluso');if(v){markCheckboxBeforeWord(condP,'CONDOMÍNIO','não',v==='não');markCheckboxBeforeWord(condP,'CONDOMÍNIO','sim',v==='sim')}
+    swapYesNo(condP);const v=checked('condIncluso');if(v){markCheckboxBeforeWord(condP,'CONDOMÍNIO','não',v==='não');markCheckboxBeforeWord(condP,'CONDOMÍNIO','sim',v==='sim')}
   }
   setCellLines(pc[7],value('descricao'));
   [['mobiliado',8],['eletro',10],['lazer',12],['piscina',14],['churrasqueira',16],['servicoPraia',18],['chaves',20]].forEach(([name,row])=>{
     const v=checked(name);if(!v)return;
-    markCheckboxAfter(pc[row],'NÃO',v==='não');markCheckboxAfter(pc[row],'SIM',v==='sim');
+    swapYesNo(pc[row]);markCheckboxAfter(pc[row],'NÃO',v==='não');markCheckboxAfter(pc[row],'SIM',v==='sim');
   });
   if(value('telVisita'))replaceInContainer(pc[22],'(  )','('+value('telVisita')+')');
   const obsRows=rowsOf(tables[1]);
@@ -144,7 +170,7 @@ function fillDocx(xml){
   putAfter(oc[3],'CPF:',value('cpf'));putAfter(oc[4],'TELEFONE:',value('telefone'));putAfter(oc[5],'E-MAIL:',value('email'));
   setDate(xml);
   const auth=paragraphsOf(xml).find(p=>flatText(p).includes('AUTORIZO A RE/MAX SOUL'));
-  if(auth){fillUnderlinedTab(auth,'CORRETOR(A)',value('corretor'));fillUnderlinedTab(auth,'CRECI',value('creci'))}
+  if(auth){fillUnderlinedTab(auth,'CORRETOR(A)',corretorValue());fillUnderlinedTab(auth,'CRECI',value('creci'))}
 }
 function getData(){
   const data={};document.querySelectorAll('#authForm input,#authForm select,#authForm textarea').forEach(el=>{
@@ -172,10 +198,10 @@ function printPageHtml(data,logo){
 @media screen{body{background:#e5e7eb;padding:12px}.page{background:#fff;margin:0 auto 12px;box-shadow:0 2px 15px #0002}}@media print{body{background:white}.page{margin:0;box-shadow:none}}
 </style></head><body>
 <section class="page"><div class="logo">${logo?'<img src="'+logo+'" alt="RE/MAX SOUL">':''}</div><div class="title">AUTORIZAÇÃO PARA DIVULGAÇÃO DE ANÚNCIO DE LOCAÇÃO<br>DE IMÓVEL SEM EXCLUSIVIDADE</div><div class="section">II. DADOS DO IMÓVEL</div>
-<table class="tbl"><tr class="r"><td colspan="2">TIPO: SOBRADO ${box(value('tipo')==='SOBRADO'?'X':' ')} &nbsp; TÉRREA ${box(value('tipo')==='TÉRREA'?'X':' ')}<span style="float:right">PRAIA: ${e(value('praia'))}</span></td></tr>
-<tr class="r"><td colspan="2">DISTÂNCIA DA PRAIA: ${e(value('distancia'))} METROS</td></tr><tr class="r"><td colspan="2">ENDEREÇO DO IMÓVEL: ${e(value('endereco'))}</td></tr>
+<table class="tbl"><tr class="r"><td colspan="2">TIPO: SOBRADO ${box(value('tipo')==='SOBRADO'?'X':' ')} &nbsp; TÉRREA ${box(value('tipo')==='TÉRREA'?'X':' ')}<span style="float:right">PRAIA: ${e(praiaValue())}</span></td></tr>
+<tr class="r"><td colspan="2">DISTÂNCIA DA PRAIA: ${e(value('distancia'))}${value('distancia')?' metros':''}</td></tr><tr class="r"><td colspan="2">ENDEREÇO DO IMÓVEL: ${e(enderecoImovel())}</td></tr>
 <tr class="r"><td>CONDOMÍNIO: ${e(value('condominio'))}</td><td>Nº UNIDADE: ${e(value('unidade'))}</td></tr>
-<tr class="r"><td colspan="2">ÁREA TOTAL: ${e(value('areaTotal'))} &nbsp;&nbsp;&nbsp; ÁREA CONSTRUÍDA: ${e(value('areaConstruida'))}<span style="float:right">IDADE DO IMÓVEL: ${e(value('idade'))}</span></td></tr>
+<tr class="r"><td colspan="2">ÁREA TOTAL: ${e(formatArea('areaTotal'))} &nbsp;&nbsp;&nbsp; ÁREA CONSTRUÍDA: ${e(formatArea('areaConstruida'))}<span style="float:right">IDADE DO IMÓVEL: ${e(formatIdade())}</span></td></tr>
 <tr><td colspan="2">VALOR DA LOCAÇÃO: R$ ${e(value('valorLocacao'))} /MÊS<br>INCLUSO no valor anunciado da locação:<br>IPTU ${box(markNo('iptuIncluso'))}não &nbsp; ${box(mark('iptuIncluso'))}sim &nbsp; R$ ${e(value('iptuValor'))} /MÊS<br>CONDOMÍNIO ${box(markNo('condIncluso'))}não &nbsp; ${box(mark('condIncluso'))}sim &nbsp; R$ ${e(value('condValor'))} /MÊS</td></tr>
 <tr><td colspan="2" style="height:7mm">DESCRIÇÃO DO IMÓVEL:</td></tr><tr class="description"><td colspan="2">${fmtText(value('descricao'))}</td></tr>
 <tr class="options"><td colspan="2">MOBILIADO: NÃO ${box(markNo('mobiliado'))} &nbsp; SIM ${box(mark('mobiliado'))}</td></tr><tr class="r"><td colspan="2"></td></tr>
@@ -193,7 +219,7 @@ function printPageHtml(data,logo){
 <tr><td>CIDADE: ${e(value('cidade'))}<span style="margin-left:26mm">ESTADO: ${e(value('estado'))}</span><span style="float:right">CEP: ${e(value('cep'))}</span></td></tr>
 <tr><td>CPF: ${e(value('cpf'))}</td></tr><tr><td>TELEFONE: ${e(value('telefone'))}</td></tr><tr><td>E-MAIL: ${e(value('email'))}</td></tr></table>
 <div class="date">DATA: ${e(datePt(value('data')))}</div>
-<p class="auth">AUTORIZO A <b>RE/MAX SOUL</b>, ATRAVÉS DO(A) CORRETOR(A) <u>${e(value('corretor'))}</u>, CRECI <u>${e(value('creci'))}</u> A DIVULGAR INCLUINDO ONLINE MEU IMÓVEL PARA LOCAÇÃO, <b><u>SEM EXCLUSIVIDADE</u></b>.</p>
+<p class="auth">AUTORIZO A <b>RE/MAX SOUL</b>, ATRAVÉS DO(A) CORRETOR(A) <u>${e(corretorValue())}</u>, CRECI <u>${e(value('creci'))}</u> A DIVULGAR INCLUINDO ONLINE MEU IMÓVEL PARA LOCAÇÃO, <b><u>SEM EXCLUSIVIDADE</u></b>.</p>
 <div class="signature">PROPRIETÁRIO(A)</div></section>
 <script>window.addEventListener('load',()=>setTimeout(()=>window.print(),350));<\/script></body></html>`;
 }
@@ -215,9 +241,14 @@ async function makeDocx(){
 }
 async function makePdf(){
   if(!templateBytes)throw new Error('O modelo original não foi carregado. Recarregue a página.');
-  const win=window.open('','_blank');if(!win)throw new Error('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.');
-  try{const zip=await JSZip.loadAsync(templateBytes.slice(0));const logo=await logoData(zip);win.document.open();win.document.write(printPageHtml(getData(),logo));win.document.close()}
-  catch(err){win.close();throw err}
+  if(!window.html2pdf)throw new Error('A biblioteca de PDF não carregou. Verifique a conexão e tente novamente.');
+  const zip=await JSZip.loadAsync(templateBytes.slice(0));const logo=await logoData(zip);
+  const frame=document.createElement('iframe');frame.style.cssText='position:fixed;left:-10000px;top:0;width:820px;height:1200px;border:0';document.body.appendChild(frame);
+  try{
+    const doc=frame.contentDocument;doc.open();doc.write(printPageHtml(getData(),logo).replace(/<script>[\s\S]*?<\/script>/,'').replace('</body>',''));doc.close();
+    await new Promise(resolve=>setTimeout(resolve,500));
+    await html2pdf().set({margin:0,filename:'autorizacao-locacao'+(value('nome')?'-'+value('nome').replace(/[^a-z0-9À-ÿ -]/gi,'').trim().replace(/\s+/g,'-'):'')+'.pdf',image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,useCORS:true,logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy']}}).from(doc.body).save();
+  }finally{frame.remove()}
 }
 function status(message,type='ok'){$('actionStatus').textContent=message;$('actionStatus').style.color=type==='bad'?'var(--theme-red)':'var(--theme-green)'}
 function setTemplateStatus(message,type){const el=$('templateStatus');el.className='template-status '+type;el.innerHTML='<span class="dot"></span> '+e(message)}
@@ -233,10 +264,15 @@ async function loadTemplate(){
 }
 function clearForm(){ $('authForm').reset();$('data').value=localToday();status('Formulário limpo.');}
 $('btnLimpar').addEventListener('click',clearForm);
+$('praia').addEventListener('change',()=>{const other=value('praia')==='OUTRA';$('praiaOutra').classList.toggle('hidden',!other);if(other)$('praiaOutra').focus()});
+$('corretor').addEventListener('change',()=>{const other=value('corretor')==='OUTRO';$('corretorOutro').classList.toggle('hidden',!other);applyBroker();if(other)$('corretorOutro').focus()});
+$('corretorOutro').addEventListener('input',applyBroker);
+$('cepImovel').addEventListener('blur',()=>lookupCep('cepImovel','property'));
+$('cep').addEventListener('blur',()=>lookupCep('cep','owner'));
 $('btnDocx').addEventListener('click',async()=>{try{status('Gerando DOCX…');await makeDocx();status('DOCX gerado. Abra e confira antes de utilizar.')}catch(err){status(err.message,'bad')}});
 $('btnDocxTop').addEventListener('click',()=>$('btnDocx').click());
 $('btnPdf').addEventListener('click',async()=>{try{status('Preparando visualização…');await makePdf();status('Visualização aberta. Use a opção de imprimir/salvar em PDF.')}catch(err){status(err.message,'bad')}});
 $('btnPdfTop').addEventListener('click',()=>$('btnPdf').click());
-$('data').value=localToday();
+$('data').value=localToday();applyBroker();
 (function theme(){let t='light';try{t=localStorage.getItem('remax-unified-theme')||'light'}catch(_){}document.documentElement.dataset.theme=t;const b=document.createElement('button');b.className='theme-toggle no-print';b.type='button';function apply(){b.textContent=document.documentElement.dataset.theme==='dark'?'☀ Modo claro':'☾ Modo escuro';b.setAttribute('aria-pressed',String(document.documentElement.dataset.theme==='dark'))}b.onclick=()=>{const n=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=n;try{localStorage.setItem('remax-unified-theme',n)}catch(_){}apply()};apply();document.body.appendChild(b)})();
 loadTemplate();
